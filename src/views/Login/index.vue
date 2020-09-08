@@ -151,12 +151,6 @@ export default {
       }
     };
 
-    // 提交表单、获取验证码
-    const getSms = () => {
-      // alert(111111);
-      GetSms();
-    };
-
     const msgTab = reactive([
       { txt: "登录", current: true, type: "login" },
       { txt: "注册", current: false, type: "reg" }
@@ -205,6 +199,12 @@ export default {
         }
       })
     });
+    
+    // 提交表单、获取验证码
+    const getSms = () => {
+      // alert(111111);
+      GetSms();
+    };
     onMounted (() => {
 
     })
@@ -217,6 +217,8 @@ export default {
       rules
     }
   },
+
+  
   created() {},
   mounted() {},
 };
