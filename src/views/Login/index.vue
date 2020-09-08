@@ -91,7 +91,7 @@
 
 <script>
 // import axios from "axios";
-import { reactive } from "@vue/composition-api";
+import { isRef, onMounted, reactive,ref, toRef, toRefs } from "@vue/composition-api";
 import { GetSms } from "@/api/login.js";
 import {
   stripscript,
@@ -101,16 +101,8 @@ import {
 } from "@/utils/validate.js";
 export default {
   name: `login`,
-  setup(props, context) {
-    const msgTab = reactive([
-      { txt: "登录", current: true, type: "login" },
-      { txt: "注册", current: false, type: "reg" }
-    ]);
-    console.log(msgTab);
-  },
-  data() {
-    // 验证用户名部分
-    var validateUserName = (rule, value, callback) => {
+  setup(props, {refs}) {
+    let validateUserName = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请输入用户名"));
       } else if (checkEmail(value)) {
@@ -120,9 +112,9 @@ export default {
       }
     };
     // 校验密码
-    var validatePass = (rule, value, callback) => {
-      this.ruleForm.password = stripscript(value);
-      value = this.ruleForm.password;
+    let validatePass = (rule, value, callback) => {
+      ruleForm.password = stripscript(value);
+      value = ruleForm.password;
       if (value === "") {
         callback(new Error("请输入密码"));
       } else if (checkPasswd(value)) {
@@ -133,15 +125,15 @@ export default {
     };
 
     // 校验二次密码
-    var valiagenPass = (rule, value, callback) => {
-      if (this.model === "login") {
+    let valiagenPass = (rule, value, callback) => {
+      if (model.value === "login") {
         callback();
       }
-      this.ruleForm.agenPasswd = stripscript(value);
-      value = this.ruleForm.agenPasswd;
+      ruleForm.agenPasswd = stripscript(value);
+      value = ruleForm.agenPasswd;
       if (value === "") {
         callback(new Error("请输入密码"));
-      } else if (value != this.ruleForm.password) {
+      } else if (value != ruleForm.password) {
         callback(new Error("两次密码输入不一致!"));
       } else {
         callback();
@@ -149,7 +141,7 @@ export default {
     };
 
     // 校验验证码
-    var checkcode = (rule, value, callback) => {
+    let checkcode = (rule, value, callback) => {
       if (value == "") {
         return callback(new Error("请输入验证码"));
       } else if (checkCode(value)) {
@@ -159,51 +151,74 @@ export default {
       }
     };
 
-    return {
-      model: "login",
-      ruleForm: {
-        username: "",
-        password: "",
-        agenPasswd: "",
-        code: ""
-      },
-      rules: {
-        username: [{ validator: validateUserName, trigger: "blur" }],
-        password: [{ validator: validatePass, trigger: "blur" }],
-        agenPasswd: [{ validator: valiagenPass, trigger: "blur" }],
-        code: [{ validator: checkcode, trigger: "blur" }]
-      }
-    };
     // 提交表单、获取验证码
     const getSms = () => {
       // alert(111111);
       GetSms();
     };
-  },
-  created() {},
-  mounted() {},
-  methods: {
-    // 数据驱动试图
-    toggleMnew(data) {
-      this.msgTab.forEach(elem => {
+
+    const msgTab = reactive([
+      { txt: "登录", current: true, type: "login" },
+      { txt: "注册", current: false, type: "reg" }
+    ]);
+    console.log(msgTab);
+    const model= ref("login");
+    const ruleForm = reactive({
+        username: "",
+        password: "",
+        agenPasswd: "",
+        code: ""
+      });
+    const rules = reactive({
+        username: [{ validator: validateUserName, trigger: "blur" }],
+        password: [{ validator: validatePass, trigger: "blur" }],
+        agenPasswd: [{ validator: valiagenPass, trigger: "blur" }],
+        code: [{ validator: checkcode, trigger: "blur" }]
+      });
+    console.log(isRef(msgTab)?"是基础数据":"是对象类型");
+    function useMousePosition() {    
+      const pos = reactive({
+        x: 0,
+        y: 0
+      });
+    return toRefs(pos);
+    }
+    const { x, y } = useMousePosition();
+    console.log(x.value,y.value)
+        // 数据驱动试图
+    const  toggleMnew = (data => {
+      msgTab.forEach(elem => {
         elem.current = false;
       });
       data.current = true;
       // 修改模块值
-      this.model = data.type;
-    },
+      model.value = data.type;
+    });
 
-    submitForm(formName) {
-      this.$refs[formName].validate(valid => {
+    const submitForm = (formName => {
+      $refs[formName].validate(valid => {
         if (valid) {
           alert("submit!");
         } else {
           console.log("error submit!!");
           return false;
         }
-      });
+      })
+    });
+    onMounted (() => {
+
+    })
+    return {
+      msgTab,
+      model,
+      toggleMnew,
+      submitForm,
+      ruleForm,
+      rules
     }
-  }
+  },
+  created() {},
+  mounted() {},
 };
 </script>
 
